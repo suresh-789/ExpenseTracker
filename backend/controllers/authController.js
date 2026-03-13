@@ -123,12 +123,16 @@ exports.updateUserProfile = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
+  console.log("Forgot password request received for:", email);
+
   if (!email) {
     return res.status(400).json({ message: "Email is required" });
   }
 
   try {
     const user = await User.findOne({ email });
+    
+    console.log("User found:", user);
     
     if (!user) {
       return res.status(404).json({ message: "User not found with this email" });

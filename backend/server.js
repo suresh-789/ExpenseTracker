@@ -16,11 +16,11 @@ app.use(
       "http://localhost:5173",
       "https://expense-tracker-sureshnaidu.vercel.app",
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
-app.use(cors());
 app.use(express.json());
 
 connectDB();
