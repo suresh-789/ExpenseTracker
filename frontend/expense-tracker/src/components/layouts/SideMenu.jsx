@@ -11,7 +11,7 @@ import { API_PATHS } from "../../utils/apiPaths";
 import uploadImage from "../../utils/uploadImage";
 import { toast } from "react-hot-toast";
 
-const SideMenu = ({ activeMenu, onClose }) => {
+const SideMenu = ({ activeMenu, onClose, onProfileSettings }) => {
   const { user, clearUser, updateUser } = useContext(UserContext);
   const navigate = useNavigate();
   const [openProfileModal, setOpenProfileModal] = useState(false);
@@ -112,11 +112,17 @@ const SideMenu = ({ activeMenu, onClose }) => {
       <button
         className="w-full flex items-center gap-4 text-[15px] text-gray-700 hover:bg-gray-100 py-3 px-6 rounded-lg mt-4"
         onClick={() => {
-          setProfileData({
-            fullName: user?.fullName || "",
-            profileImage: null,
-          });
-          setOpenProfileModal(true);
+          if (onProfileSettings) {
+            // Mobile: Use parent handler to close menu and show modal
+            onProfileSettings();
+          } else {
+            // Desktop: Show modal inline
+            setProfileData({
+              fullName: user?.fullName || "",
+              profileImage: null,
+            });
+            setOpenProfileModal(true);
+          }
         }}
       >
         <span className="text-xl">⚙️</span>
