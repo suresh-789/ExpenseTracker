@@ -1,27 +1,30 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const { Resend } = require("resend");
+const sgMail = require("@sendgrid/mail");
 
 // Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
 
-// Create email sender using Resend
+// Initialize SendGrid
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+// Create email sender using SendGrid
 const sendEmail = async (to, subject, html) => {
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  
   try {
-    const result = await resend.emails.send({
-      from: "Expense Tracker <onboarding@resend.dev>",
-      to: [to],
+    const result = await sgMail.send({
+      to: to,
+      from: "expensetracker390@gmail.com",
       subject: subject,
       html: html,
     });
     console.log("Email sent successfully:", result);
     return result;
   } catch (error) {
-    console.error("Resend error:", error);
+    console.error("SendGrid error:", error);
     throw error;
   }
 };
@@ -127,7 +130,7 @@ exports.updateUserProfile = async (req, res) => {
   }
 };
 
-// Forgot Password
+// Forgot Password - Send OTP
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -146,38 +149,69 @@ exports.forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found with this email" });
     }
 
-    // Generate reset token (valid for 1 hour)
-    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Save reset token to user (optional: you can add a resetPasswordToken field to User model)
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    // Save OTP to user (valid for 10 minutes)
+    user.resetPasswordToken = otp;
+    user.resetPasswordExpires = Date.now() + 600000; // 10 minutes
     await user.save();
 
-    // Create reset URL
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
-    // Send email using Resend
+    // Send OTP via email
     const emailHtml = `
-      <h1>Password Reset</h1>
-      <p>You requested a password reset. Click the link below to reset your password:</p>
-      <a href="${resetUrl}" style="padding: 10px 20px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
-      <p>Or copy this link: ${resetUrl}</p>
-      <p>This link will expire in 1 hour.</p>
+      <h1>Password Reset OTP</h1>
+      <p>Your OTP for password reset is: <strong>${otp}</strong></p>
+      <p>This OTP will expire in 10 minutes.</p>
       <p>If you didn't request this, please ignore this email.</p>
     `;
 
-    await sendEmail(email, "Password Reset Request", emailHtml);
+    await sendEmail(email, "Password Reset OTP", emailHtml);
 
-    res.status(200).json({ message: "Password reset link sent to your email" });
+    res.status(200).json({ message: "OTP sent to your email", email: email });
   } catch (err) {
     console.error("Error in forgotPassword:", err);
     // Return success for security - don't reveal if email was sent or not
-    res.status(200).json({ message: "If an account exists with this email, a reset link will be sent" });
+    res.status(200).json({ message: "If an account exists with this email, an OTP will be sent" });
   }
 };
 
-// Reset Password
+// Reset Password with OTP
+exports.resetPassword = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ message: "Email, OTP and new password are required" });
+  }
+
+  try {
+    // Find user by email
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if OTP matches
+    if (user.resetPasswordToken !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Check if OTP is expired
+    if (user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    // Update password
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (err) {
+    res.status(400).json({ message: "Error resetting password" });
+  }
+};
 exports.resetPassword = async (req, res) => {
   const { token } = req.params;
   const { newPassword } = req.body;

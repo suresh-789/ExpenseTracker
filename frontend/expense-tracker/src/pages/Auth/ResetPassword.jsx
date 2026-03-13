@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/layouts/AuthLayout";
 import Input from "../../components/Inputs/Input";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
 
 const ResetPassword = () => {
-  const { token } = useParams();
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState(null);
@@ -19,8 +20,8 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!password) {
-      setError("Please enter a new password.");
+    if (!email || !otp || !password) {
+      setError("Please fill in all fields.");
       return;
     }
 
@@ -40,8 +41,8 @@ const ResetPassword = () => {
 
     try {
       const response = await axiosInstance.post(
-        API_PATHS.AUTH.RESET_PASSWORD(token),
-        { newPassword: password }
+        API_PATHS.AUTH.RESET_PASSWORD,
+        { email, otp, newPassword: password }
       );
       
       if (response.data.message) {
@@ -65,11 +66,27 @@ const ResetPassword = () => {
   return (
     <AuthLayout>
       <div className="lg:w-[70%] h-3/4 md:h-full flex flex-col justify-center">
-        <h3 className="text-xl font-semibold text-black">New Password</h3>
+        <h3 className="text-xl font-semibold text-black">Reset Password</h3>
         <p className="text-xs text-slate-700 mt-[5px] mb-6">
-          Enter your new password below
+          Enter the OTP sent to your email and create a new password
         </p>
         <form onSubmit={handleSubmit}>
+          <Input
+            value={email}
+            onChange={({ target }) => setEmail(target.value)}
+            label="Email Address"
+            placeholder="john@example.com"
+            type="text"
+          />
+          
+          <Input
+            value={otp}
+            onChange={({ target }) => setOtp(target.value)}
+            label="OTP (6 digits)"
+            placeholder="Enter OTP"
+            type="text"
+          />
+          
           <Input
             value={password}
             onChange={({ target }) => setPassword(target.value)}

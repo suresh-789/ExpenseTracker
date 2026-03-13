@@ -34,9 +34,9 @@ const ForgotPassword = () => {
       
       if (response.data.message) {
         setSuccess(response.data.message);
-        // Redirect to login after 3 seconds
+        // Redirect to reset password page after 3 seconds
         setTimeout(() => {
-          navigate("/login");
+          navigate("/reset-password");
         }, 3000);
       }
     } catch (error) {
@@ -55,7 +55,7 @@ const ForgotPassword = () => {
       <div className="lg:w-[70%] h-3/4 md:h-full flex flex-col justify-center">
         <h3 className="text-xl font-semibold text-black">Reset Password</h3>
         <p className="text-xs text-slate-700 mt-[5px] mb-6">
-          Enter your email address and we'll send you a link to reset your password
+          Enter your email address and we'll send you an OTP to reset your password
         </p>
         <form onSubmit={handleSubmit}>
           <Input
@@ -74,7 +74,7 @@ const ForgotPassword = () => {
             className="btn-primary"
             disabled={loading}
           >
-            {loading ? "Sending..." : "SEND RESET LINK"}
+            {loading ? "Sending..." : "SEND OTP"}
           </button>
 
           <p className="text-[13px] text-slate-800 mt-3">
