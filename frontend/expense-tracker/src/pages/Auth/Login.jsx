@@ -83,12 +83,20 @@ const Login = () => {
             LOGIN
           </button>
 
-          <p className="text-[13px] Otext-slate-800 mt-3">
-            Don't have an account?{" "}
-            <Link className="font-medium text-primary underline" to="/signup">
-              SignUp
+          <div className="flex justify-between items-center mt-3">
+            <p className="text-[13px] text-slate-800">
+              Don't have an account?{" "}
+              <Link className="font-medium text-primary underline" to="/signup">
+                SignUp
+              </Link>
+            </p>
+            <Link 
+              className="text-[13px] font-medium text-primary underline" 
+              to="/forgot-password"
+            >
+              Forgot Password?
             </Link>
-          </p>
+          </div>
         </form>
       </div>
     </AuthLayout>

@@ -1,9 +1,21 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 // Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+};
+
+// Create email transporter
+const createTransporter = () => {
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
 };
 
 // Register User
@@ -104,5 +116,93 @@ exports.updateUserProfile = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error updating profile", error: err.message });
+  }
+};
+
+// Forgot Password
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found with this email" });
+    }
+
+    // Generate reset token (valid for 1 hour)
+    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    
+    // Save reset token to user (optional: you can add a resetPasswordToken field to User model)
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+
+    // Create reset URL
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    // Send email
+    const transporter = createTransporter();
+    
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset Request",
+      html: `
+        <h1>Password Reset</h1>
+        <p>You requested a password reset. Click the link below to reset your password:</p>
+        <a href="${resetUrl}" style="padding: 10px 20px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
+        <p>Or copy this link: ${resetUrl}</p>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "Password reset link sent to your email" });
+  } catch (err) {
+    console.error("Error in forgotPassword:", err);
+    res.status(500).json({ message: "Error sending reset email", error: err.message });
+  }
+};
+
+// Reset Password
+exports.resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  if (!newPassword) {
+    return res.status(400).json({ message: "New password is required" });
+  }
+
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    const user = await User.findById(decoded.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if token is expired
+    if (user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({ message: "Reset token has expired" });
+    }
+
+    // Update password
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (err) {
+    res.status(400).json({ message: "Invalid or expired token" });
   }
 };
