@@ -1,6 +1,5 @@
-// Auto-detect: use localhost for local, render.com for Vercel
-const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-export const BASE_URL = isLocalhost ? "http://localhost:8000" : "https://expensetracker-bdmw.onrender.com";
+// For Vercel deployment - using deployed backend
+export const BASE_URL = "https://expensetracker-bdmw.onrender.com";
 
 // utils/apiPaths.js
 export const API_PATHS = {
