@@ -90,12 +90,6 @@ const Login = () => {
                 SignUp
               </Link>
             </p>
-            <Link 
-              className="text-[13px] font-medium text-primary underline" 
-              to="/forgot-password"
-            >
-              Forgot Password?
-            </Link>
           </div>
         </form>
       </div>

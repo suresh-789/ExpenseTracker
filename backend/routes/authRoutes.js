@@ -5,8 +5,6 @@ const {
   loginUser,
   getUserInfo,
   updateUserProfile,
-  forgotPassword,
-  resetPassword,
 } = require("../controllers/authController");
 const router = express.Router();
 const upload = require("../middleware/uploadMiddleware");
@@ -14,10 +12,6 @@ const upload = require("../middleware/uploadMiddleware");
 router.post("/register", registerUser);
 
 router.post("/login", loginUser);
-
-router.post("/forgot-password", forgotPassword);
-
-router.post("/reset-password", resetPassword);
 
 router.get("/getUser", protect, getUserInfo);
 
