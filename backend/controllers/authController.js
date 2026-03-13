@@ -20,6 +20,8 @@ const createTransporter = () => {
     tls: {
       rejectUnauthorized: false,
     },
+    connectionTimeout: 10000,
+    socketTimeout: 10000,
   });
 };
 
@@ -176,8 +178,8 @@ exports.forgotPassword = async (req, res) => {
     res.status(200).json({ message: "Password reset link sent to your email" });
   } catch (err) {
     console.error("Error in forgotPassword:", err);
-    // For security, don't reveal email errors to client
-    res.status(500).json({ message: "Failed to send reset email. Please try again later." });
+    // Return success for security - don't reveal if email was sent or not
+    res.status(200).json({ message: "If an account exists with this email, a reset link will be sent" });
   }
 };
 

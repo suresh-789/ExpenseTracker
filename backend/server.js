@@ -30,6 +30,11 @@ app.use("/api/v1/income", incomeRoutes);
 app.use("/api/v1/expense", expenseRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 
+// Health check / wake-up endpoint
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Backend is awake" });
+});
+
 // Serve uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

@@ -10,9 +10,19 @@ const axiosInstance = axios.create({
   },
 });
 
-// Request Interceptor
+// Wake up backend on first request (fix for Render.com cold start)
+let isBackendAwake = false;
+
 axiosInstance.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    if (!isBackendAwake && BASE_URL.includes("render")) {
+      try {
+        await axios.get(`${BASE_URL}/api/health`, { timeout: 5000 });
+        isBackendAwake = true;
+      } catch (e) {
+        // Ignore errors, proceed with request
+      }
+    }
     const accessToken = localStorage.getItem("token");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
