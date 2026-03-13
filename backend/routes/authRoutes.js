@@ -21,9 +21,11 @@ router.post("/upload-image", upload.single("image"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "No file uploaded" });
   }
-  const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${
-    req.file.filename
-  }`;
+  // Check for HTTPS via X-Forwarded-Proto header (set by proxies like Render)
+  // or use the request protocol
+  const protocol = req.get("X-Forwarded-Proto") || req.protocol;
+  const host = req.get("host");
+  const imageUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
   res.status(200).json({ imageUrl });
 });
 
