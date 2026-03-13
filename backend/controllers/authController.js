@@ -10,10 +10,15 @@ const generateToken = (id) => {
 // Create email transporter
 const createTransporter = () => {
   return nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 };
@@ -171,7 +176,8 @@ exports.forgotPassword = async (req, res) => {
     res.status(200).json({ message: "Password reset link sent to your email" });
   } catch (err) {
     console.error("Error in forgotPassword:", err);
-    res.status(500).json({ message: "Error sending reset email", error: err.message });
+    // For security, don't reveal email errors to client
+    res.status(500).json({ message: "Failed to send reset email. Please try again later." });
   }
 };
 
