@@ -14,8 +14,8 @@ const DashboardLayout = ({ children, activeMenu }) => {
       {/* Sidebar + Content */}
       {user && (
         <div className="flex">
-          {/* Sidebar (hidden on mobile) */}
-          <div className="hidden lg:block">
+          {/* Sidebar (hidden on mobile - shown via Navbar) */}
+          <div className="hidden lg:block w-64 flex-shrink-0">
             <SideMenu activeMenu={activeMenu} />
           </div>
 

@@ -11,7 +11,7 @@ import { API_PATHS } from "../../utils/apiPaths";
 import uploadImage from "../../utils/uploadImage";
 import { toast } from "react-hot-toast";
 
-const SideMenu = ({ activeMenu }) => {
+const SideMenu = ({ activeMenu, onClose }) => {
   const { user, clearUser, updateUser } = useContext(UserContext);
   const navigate = useNavigate();
   const [openProfileModal, setOpenProfileModal] = useState(false);
@@ -27,6 +27,8 @@ const SideMenu = ({ activeMenu }) => {
       return;
     }
     navigate(route);
+    // Close mobile menu when clicking a menu item
+    if (onClose) onClose();
   };
 
   // Logout function
@@ -64,7 +66,8 @@ const SideMenu = ({ activeMenu }) => {
   };
 
   return (
-<div className="hidden md:block w-64 h-[calc(100vh-61px)] bg-white border-r border-gray-200/50 p-5 sticky top-[61px] z-20">      
+   <div className="w-64 h-[calc(100vh-61px)] bg-white border-r border-gray-200/50 p-5 z-20">
+      
       {/* Profile Section */}
       <div className="flex flex-col items-center justify-center gap-3 mt-3 mb-7">
         {user?.profileImageUrl ? (

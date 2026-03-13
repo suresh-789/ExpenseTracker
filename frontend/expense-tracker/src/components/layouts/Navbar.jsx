@@ -21,11 +21,22 @@ const Navbar = ({ activeMenu }) => {
 
       <h2 className="text-lg font-medium text-black">Expense Tracker</h2>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar Overlay */}
       {openSideMenu && (
-        <div className="fixed top-[61px] -ml-4 bg-white">
-          <SideMenu activeMenu={activeMenu} />
-        </div>
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            onClick={() => setOpenSideMenu(false)}
+          />
+          {/* Side Menu */}
+          <div className="fixed lg:hidden left-0 top-[61px] z-40">
+            <SideMenu 
+              activeMenu={activeMenu} 
+              onClose={() => setOpenSideMenu(false)} 
+            />
+          </div>
+        </>
       )}
     </div>
   );
