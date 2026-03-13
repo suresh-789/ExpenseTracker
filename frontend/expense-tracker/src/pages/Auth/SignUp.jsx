@@ -74,7 +74,7 @@ const SignUp = () => {
 
   return (
     <AuthLayout>
-      <div className="lg:w-[100%] h-auto md:h-full mt-10 md:mt-0 flex flex-col justify-center">
+      <div className="w-full max-w-md mx-auto h-auto md:h-full mt-10 md:mt-0 flex flex-col justify-center px-4">
         <h3 className="text-xl font-semibold Otext-black">Create an Account</h3>
         <p className="text-xs Otext-slate-700 mt-[5px] mb-6">
           Join us today by entering your details below.
@@ -82,7 +82,7 @@ const SignUp = () => {
 
         <form onSubmit={handleSignUp}>
           <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4 w-full">
             <Input
               value={fullName}
               onChange={({ target }) => setFullName(target.value)}
@@ -97,7 +97,7 @@ const SignUp = () => {
               placeholder="john@example.com"
               type="text"
             />
-            <div className="col-span-2">
+            <div className="md:col-span-2">
               <Input
                 value={password}
                 onChange={({ target }) => setPassword(target.value)}
