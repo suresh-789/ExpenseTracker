@@ -1,4 +1,6 @@
-export const BASE_URL = "https://expensetracker-bdmw.onrender.com";
+// Auto-detect environment: use localhost in development, deployed URL in production
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+export const BASE_URL = isLocalhost ? "http://localhost:8000" : "https://expensetracker-bdmw.onrender.com";
 
 // utils/apiPaths.js
 export const API_PATHS = {
