@@ -1,31 +1,29 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
 // Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
 
-// Create email transporter
-const createTransporter = async () => {
-  // Verify SMTP connection
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+// Create email sender using Resend
+const sendEmail = async (to, subject, html) => {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   
   try {
-    await transporter.verify();
-    console.log("SMTP connection verified successfully");
+    const result = await resend.emails.send({
+      from: "Expense Tracker <onboarding@resend.dev>",
+      to: [to],
+      subject: subject,
+      html: html,
+    });
+    console.log("Email sent successfully:", result);
+    return result;
   } catch (error) {
-    console.error("SMTP verification failed:", error);
+    console.error("Resend error:", error);
+    throw error;
   }
-  
-  return transporter;
 };
 
 // Register User
@@ -159,24 +157,17 @@ exports.forgotPassword = async (req, res) => {
     // Create reset URL
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    // Send email
-    const transporter = await createTransporter();
-    
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Password Reset Request",
-      html: `
-        <h1>Password Reset</h1>
-        <p>You requested a password reset. Click the link below to reset your password:</p>
-        <a href="${resetUrl}" style="padding: 10px 20px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
-        <p>Or copy this link: ${resetUrl}</p>
-        <p>This link will expire in 1 hour.</p>
-        <p>If you didn't request this, please ignore this email.</p>
-      `,
-    };
+    // Send email using Resend
+    const emailHtml = `
+      <h1>Password Reset</h1>
+      <p>You requested a password reset. Click the link below to reset your password:</p>
+      <a href="${resetUrl}" style="padding: 10px 20px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
+      <p>Or copy this link: ${resetUrl}</p>
+      <p>This link will expire in 1 hour.</p>
+      <p>If you didn't request this, please ignore this email.</p>
+    `;
 
-    await transporter.sendMail(mailOptions);
+    await sendEmail(email, "Password Reset Request", emailHtml);
 
     res.status(200).json({ message: "Password reset link sent to your email" });
   } catch (err) {
